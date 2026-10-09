@@ -393,3 +393,5 @@ Avant toute publication ou exécution :
 Projet réalisé dans le cadre du projet de fin d’études en ingénierie, consacré à l’intelligence artificielle, au développement mobile et à l’automatisation des processus métiers portuaires.
 
 **Dépôt GitHub :** [PFE-Port-Business-Process-Automation](https://github.com/Manal-Elagri/PFE-Port-Business-Process-Automation)
+
+> ⚠️ **Important :** Le dossier `screenshots/` contient de nombreuses captures d’écran illustrant les différentes interfaces et fonctionnalités du projet, notamment l’application mobile, la plateforme Web Chat AI, le système RAG et les tableaux de bord statistiques. Les images présentées dans ce README ne sont qu’une sélection ; consultez le dossier `screenshots/` pour découvrir les autres captures.
