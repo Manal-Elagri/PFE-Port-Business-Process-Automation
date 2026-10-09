@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Platform — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/style.css?v=20260408">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-full bg-zinc-900 text-zinc-100 font-sans overflow-hidden">
+
+<div class="flex h-screen w-screen">
+    <!-- Navigation principale -->
+    <aside class="w-64 flex-shrink-0 bg-zinc-950 border-r border-zinc-800 flex flex-col">
+        <div class="p-5 border-b border-zinc-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                    <i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm">AI Platform</p>
+                    <p class="text-xs text-zinc-500">PFE Dashboard</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-3 space-y-1">
+            <button data-nav="chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 transition bg-zinc-800">
+                <i data-lucide="message-square" class="w-4 h-4"></i> Chat IA
+            </button>
+            <button data-nav="whatsapp" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 transition">
+                <i data-lucide="bot" class="w-4 h-4"></i> Mon Bot WhatsApp
+            </button>
+            <button data-nav="knowledge" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 transition">
+                <i data-lucide="book-open" class="w-4 h-4"></i> Base de Connaissances
+            </button>
+            <button data-nav="stats" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 transition">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Statistiques
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-zinc-800">
+            <a href="/docs" target="_blank" class="text-xs text-zinc-500 hover:text-emerald-400 flex items-center gap-2">
+                <i data-lucide="external-link" class="w-3 h-3"></i> Documentation API
+            </a>
+        </div>
+    </aside>
+
+    <!-- Zone principale -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <header class="h-14 flex-shrink-0 border-b border-zinc-800 bg-zinc-900/80 flex items-center justify-between px-6">
+            <h1 id="section-title" class="text-sm font-medium text-zinc-300">Chat IA</h1>
+            <div class="flex items-center gap-3 flex-wrap justify-end">
+                <span id="header-mode-badge" class="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hidden"></span>
+                <label class="text-xs text-zinc-500">Clé API</label>
+                <input type="password" id="api-key"
+                placeholder="SERVICE_API_KEY (.env)"
+                autocomplete="off"
+                class="w-44 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500"
+                title="Même valeur que SERVICE_API_KEY dans le fichier .env">
+                <label class="text-xs text-zinc-500" title="Optionnel — historique Java unifié">JWT</label>
+                <input type="password" id="jwt-token"
+                placeholder="Bearer (optionnel)"
+                autocomplete="off"
+                class="w-44 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500">
+            </div>
+        </header>
+
+        <!-- Panel Chat IA -->
+        <section id="panel-chat" data-panel class="panel-section flex flex-col flex-1 min-h-0">
+            <div class="chat-dashboard flex-1 min-h-0">
+                <aside class="chat-settings">
+                    <button class="btn-new-chat" id="btn-new-chat">+ Nouveau chat</button>
+                    <div class="sidebar-content flex-1">
+                        <div class="settings-group">
+                            <div class="setting-item">
+                                <label>Thème</label>
+                                <button id="theme-toggle" class="ui-button">🌙 Mode Sombre</button>
+                            </div>
+                            <div class="setting-item">
+                                <label>Fournisseur</label>
+                                <select id="provider-select" class="ui-select">
+                                    <option value="groq" selected>Groq</option>
+                                    <option value="gemini">Gemini</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="openrouter">OpenRouter</option>
+                                    <option value="ollama">Ollama</option>
+                                    <option value="llamacpp">Llama.cpp</option>
+                                </select>
+                            </div>
+                            <div id="model-group" class="setting-item" hidden>
+                                <label>Modèle</label>
+                                <select id="model" class="ui-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="chat-area flex-1 min-h-0">
+                    <header class="chat-header">
+                        <button id="sidebar-toggle" class="icon-button md:hidden">☰</button>
+                        <div class="model-badge">AI Chat Pro</div>
+                    </header>
+
+                    <div class="messages-container" id="chat-messages">
+                        <div class="welcome" id="welcome">
+                            <div class="logo text-4xl font-bold text-emerald-500 mb-2">AI</div>
+                            <h1>Comment puis-je vous aider ?</h1>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <div class="input-wrapper">
+                            <div id="media-preview-container" class="preview-bar" hidden>
+                                <div class="preview-item">
+                                    <div id="preview-content"></div>
+                                    <button id="btn-remove-media">×</button>
+                                </div>
+                            </div>
+                            <div class="input-box">
+                                <textarea id="content" rows="1" placeholder="Écrivez votre message..."></textarea>
+                                <div class="input-actions">
+                                    <input type="file" id="content-file" hidden>
+                                    <button type="button" class="action-btn" id="btn-media" title="Image/Vidéo">+</button>
+                                    <button type="button" class="action-btn" id="btn-audio" title="Audio">〰</button>
+                                    <button type="button" class="send-btn" id="submit" disabled>↑</button>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="disclaimer">L'IA peut générer des informations inexactes.</p>
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- Panel WhatsApp -->
+        <section id="panel-whatsapp" data-panel class="panel-section hidden">
+            <div class="panel-scroll flex items-start justify-center">
+                <div class="w-full max-w-lg bg-zinc-800/50 border border-zinc-700 rounded-2xl p-8 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+                        <i data-lucide="message-circle" class="w-8 h-8 text-emerald-400"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold mb-2">Discuter sur WhatsApp</h2>
+                    <p id="wa-user-action" class="text-sm text-zinc-400 mb-6 whitespace-pre-line">
+                        Scannez le QR code avec votre WhatsApp pour ouvrir la conversation avec <strong>+212 689 461 643</strong>.
+                    </p>
+                    <div id="qr-container" class="flex justify-center mb-4 min-h-[220px] items-center bg-zinc-900/40 rounded-xl p-4"></div>
+                    <p id="qr-hint" class="text-sm text-zinc-400">
+                        Envoyez ensuite vos messages dans WhatsApp — l'assistant IA répond automatiquement.
+                    </p>
+
+                    <details id="wa-admin-panel" class="hidden mt-8 text-left border-t border-zinc-700 pt-4">
+                        <summary class="text-xs text-zinc-500 cursor-pointer select-none hover:text-zinc-400">
+                            Configuration serveur (admin uniquement)
+                        </summary>
+                        <div class="mt-4 space-y-3">
+                            <p id="wa-admin-status" class="text-sm text-amber-300/90"></p>
+                            <span id="wa-connection-badge" class="text-xs inline-block px-2 py-1 rounded bg-zinc-700 text-zinc-300"></span>
+                            <p class="text-xs text-zinc-500">
+                                Scan QR serveur <strong>une seule fois</strong> (comme WhatsApp Web). Ensuite la session est dans <code class="text-zinc-400">data/whatsapp_neonize.db</code> — redémarrer l'app = synchronisation sans nouveau QR.
+                            </p>
+                            <button id="btn-wa-connect" type="button"
+                                class="w-full bg-amber-600 hover:bg-amber-500 text-zinc-900 font-medium py-2 rounded-lg text-sm">
+                                Démarrer la connexion Neonize
+                            </button>
+                            <button id="btn-qr-setup" type="button"
+                                class="w-full bg-zinc-700 hover:bg-zinc-600 py-2 rounded-lg text-sm">
+                                Afficher le QR serveur
+                            </button>
+                            <button id="btn-wa-reset" type="button"
+                                class="w-full bg-red-900/60 hover:bg-red-800/80 py-2 rounded-lg text-sm text-red-100">
+                                Reinitialiser session (apres erreur 401)
+                            </button>
+                            <div id="qr-setup-container" class="flex justify-center min-h-[200px] items-center bg-zinc-900/50 rounded-xl p-3"></div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel Base de connaissances -->
+        <section id="panel-knowledge" data-panel class="panel-section hidden">
+            <div class="panel-scroll max-w-4xl mx-auto w-full space-y-8">
+                <div>
+                    <h2 class="text-xl font-semibold mb-2">Mode de recherche</h2>
+                    <p class="text-sm text-zinc-400 mb-4">Choisissez comment l'IA répond aux questions.</p>
+                    <div class="flex rounded-xl overflow-hidden border border-zinc-700">
+                        <button id="mode-web" data-mode="web"
+                            class="mode-btn flex-1 py-4 px-6 text-sm font-medium transition bg-emerald-500 text-zinc-900">
+                            <i data-lucide="globe" class="w-4 h-4 inline mr-2"></i> Recherche Web
+                        </button>
+                        <button id="mode-docs" data-mode="docs"
+                            class="mode-btn flex-1 py-4 px-6 text-sm font-medium transition bg-zinc-800 text-zinc-300 hover:bg-zinc-700">
+                            <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i> Analyse de mes Documents
+                        </button>
+                    </div>
+                    <p id="kb-mode-label" class="text-sm text-zinc-400 mt-3"></p>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold mb-2">Upload de documents</h2>
+                    <div id="drop-zone"
+                        class="border-2 border-dashed border-zinc-600 rounded-2xl p-12 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-zinc-800/30 transition">
+                        <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-3 text-zinc-500"></i>
+                        <p class="text-zinc-300 mb-1">Glissez-déposez vos fichiers ici</p>
+                        <p class="text-xs text-zinc-500">PDF, Word (.docx), Excel (.xlsx)</p>
+                        <input type="file" id="upload-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls" hidden>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold mb-4">Fichiers dans la base</h2>
+                    <div class="overflow-hidden rounded-xl border border-zinc-700">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-800 text-zinc-400 text-left">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">Nom</th>
+                                    <th class="px-4 py-3 font-medium">Taille</th>
+                                    <th class="px-4 py-3 font-medium">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="files-table" class="divide-y divide-zinc-800">
+                                <tr><td colspan="3" class="px-4 py-6 text-center text-zinc-500">Chargement…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel Statistiques -->
+        <section id="panel-stats" data-panel class="panel-section hidden">
+            <div class="panel-scroll max-w-4xl mx-auto w-full space-y-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold">Utilisation des tokens</h2>
+                    <button id="btn-refresh-stats"
+                        class="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg text-sm transition">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualiser
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+                        <p class="text-xs text-zinc-500 uppercase mb-1">Requêtes totales</p>
+                        <p id="stat-requests" class="text-3xl font-bold text-emerald-400">—</p>
+                    </div>
+                    <div class="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6">
+                        <p class="text-xs text-zinc-500 uppercase mb-1">Tokens totaux</p>
+                        <p id="stat-tokens" class="text-3xl font-bold text-emerald-400">—</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
+                        <h3 class="text-sm font-medium text-zinc-400 mb-3">Par fournisseur</h3>
+                        <div id="stats-by-provider" class="space-y-2 text-sm"></div>
+                    </div>
+                    <div class="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
+                        <h3 class="text-sm font-medium text-zinc-400 mb-3">Par modèle</h3>
+                        <div id="stats-by-model" class="space-y-2 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="loading" class="loader fixed inset-0 bg-black/50 flex items-center justify-center z-50" hidden>
+    <span class="w-2 h-2 bg-emerald-400 rounded-full mx-1 animate-bounce"></span>
+    <span class="w-2 h-2 bg-emerald-400 rounded-full mx-1 animate-bounce" style="animation-delay:0.1s"></span>
+    <span class="w-2 h-2 bg-emerald-400 rounded-full mx-1 animate-bounce" style="animation-delay:0.2s"></span>
+</div>
+
+<div id="toast" class="toast fixed bottom-6 right-6 px-4 py-3 rounded-lg text-sm text-white z-50 shadow-lg" hidden></div>
+
+<script src="/static/js/app.js?v=20260408"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
+
